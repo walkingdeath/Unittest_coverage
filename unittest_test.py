@@ -134,9 +134,9 @@ def match_unitest_file():
                     src_file_name = name[5:]
                     # print(src_file_name)
                     # print(method_name)
-                    print("src目录下%s模块的%s在单元测试中没有调用"%(src_file_name, method_name))
+                    print("src目录下模块%s的%s在单元测试中没有调用"%(src_file_name, method_name))
         else:
-            print("模块%s缺少单元测试用例"%(name[5:]))
+            print("src目录下模块%s缺少单元测试用例"%(name[5:]))
 
 
     # print(src_num)
