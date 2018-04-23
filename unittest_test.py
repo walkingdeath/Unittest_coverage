@@ -120,6 +120,7 @@ def count_unittest_function():
 def match_unitest_file():
     # src_num = count_class_method()[0]
     src_file_dic = count_class_method()[1]
+    unittest_file_dic =count_unittest_function()
     src_filename_list = src_file_dic.keys()
     unittest_filename_list = filter_unittest_file(script_dir)
     # print(src_filename_list)
@@ -128,10 +129,12 @@ def match_unitest_file():
         name = "test_" + name
         # print(name)
         if name in unittest_filename_list:
-
-            for list in src_file_dic[name[5:]]:
-
-                print("OK")
+            for method_name in src_file_dic[name[5:]]:
+                if method_name not in unittest_file_dic[name]:
+                    src_file_name = name[5:]
+                    # print(src_file_name)
+                    # print(method_name)
+                    print("src目录下%s模块的%s在单元测试中没有调用"%(src_file_name, method_name))
         else:
             print("模块%s缺少单元测试用例"%(name[5:]))
 
@@ -153,5 +156,5 @@ if __name__ == '__main__':
     #     print(x)
     # match_unitest_file()
     # match_unitest_file()
-    count_unittest_function()
+    match_unitest_file()
 
