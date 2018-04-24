@@ -8,17 +8,17 @@ from application.config import LOG
 # print(os.pardir)
 script_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 print(script_dir)
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "../src/application"))
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, u"../src/application"))
 print(src_dir)
-main_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "../src"))
+main_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, u"../src"))
 print(main_dir)
 
 def filter_src_file(dir):
     file_list = []
     for root, dirs, files in os.walk(dir):
         for file in files:
-            if file.endswith(".py") and not file.startswith("__init__") and \
-            not file.startswith("common") and not file.startswith("config"):
+            if file.endswith(u".py") and not file.startswith(u"__init__") and \
+            not file.startswith(u"common") and not file.startswith(u"config"):
                 file_list.append(file)
     # file_list.append("main.py")
     return file_list
@@ -74,6 +74,12 @@ def count_class_method():
                     # print(result)
                     num[0] = num[0] + 1
                     # print(num[0])
+                elif line.startswith("    def"):
+                    result = re.findall(r'\sdef.(.*)\(', line)[0]
+                    if isinstance(result, str) and result and not result.startswith("__"):
+                        functn_list.append(result)
+                        num[1] = num[1] + 1
+
                 elif line.startswith("def"):
                     # print(line)
                     result = re.findall(r'def.(.*)\(', line)[0]
@@ -81,17 +87,12 @@ def count_class_method():
                     functn_list.append(result)
                     # print(result)
                     # file_list.append()
-                    num[1] = num[1] + 1
-                    # print(num[1])
-                elif line.startswith("    def"):
-                    result = re.findall(r'\sdef.(.*)\(', line)[0]
-                    if isinstance(result,str) and result and not result.startswith("__"):
-                        functn_list.append(result)
-                        # print(functn_list)
-
                     num[2] = num[2] + 1
+                    # print(num[1])
+
                     # print(num[2])
         file_dic[filename] = functn_list
+    print(file_dic)
     return num, file_dic
 
 def count_unittest_function():
@@ -107,9 +108,9 @@ def count_unittest_function():
             code_lines = file_content.readlines()
             # print(path)
             for line in code_lines:
-                if line.startswith("    def"):
+                if line.startswith(u"    def"):
                     result = re.findall(r'\sdef.(.*)\(', line)[0]
-                    result.startswith("setUp") and not result.startswith("tearDown")
+                    result.startswith(u"setUp") and not result.startswith("tearDown")
                     functn_list.append(result)
         file_dic[filename] = functn_list
     print(file_dic)
@@ -118,25 +119,40 @@ def count_unittest_function():
 
 
 def match_unitest_file():
-    # src_num = count_class_method()[0]
+    src_num = count_class_method()[0]  #src = [a,b,c]  a是类个数，b是类方法个数，c是函数方法
+    src_total_num = src_num[1] + src_num[2]
+    src_class_num = src_num[0]
+    print(src_total_num)
+    print(src_class_num)
+    # print(src_num)
     src_file_dic = count_class_method()[1]
-    unittest_file_dic =count_unittest_function()
+    unittest_file_dic = count_unittest_function()
     src_filename_list = src_file_dic.keys()
     unittest_filename_list = filter_unittest_file(script_dir)
     # print(src_filename_list)
-    print(src_file_dic)
+    # print(src_file_dic)
+    num = [0]
     for name in src_filename_list:
-        name = "test_" + name
+        name = u'test_' + name
         # print(name)
+        # if unittest_file_dic[name] == []:
+        #     print(u"单元测试模块%s为空" % name)
         if name in unittest_filename_list:
+            # print(name)
+            # print(name[5:])
+            # print(src_file_dic[name[5:]])
+            # print(unittest_file_dic[name])
             for method_name in src_file_dic[name[5:]]:
+                method_name = "test_" + method_name
                 if method_name not in unittest_file_dic[name]:
                     src_file_name = name[5:]
-                    # print(src_file_name)
-                    # print(method_name)
-                    print("src目录下模块%s的%s在单元测试中没有调用"%(src_file_name, method_name))
+                    num[0] = num[0] + 1
+                    print(u"src目录下模块%s的%s方法在单元测试%s模块中没有调用" % (src_file_name, method_name, name))
+                    # print(name)
         else:
-            print("src目录下模块%s缺少单元测试用例"%(name[5:]))
+            print(u"src目录下模块%s缺少单元测试用例" % (name[5:]))
+    coverage = (src_total_num - num[0])/src_total_num
+    print(u"本次提交单元测试包含类%s个，类方法%s，函数方法%s个，单元测试覆盖率为%.2f%%" % (src_num[0], src_num[1],src_num[2],coverage*100) )
 
 
     # print(src_num)
@@ -145,16 +161,4 @@ def match_unitest_file():
 
 
 if __name__ == '__main__':
-    # filter_unittest_file(script_dir)
-    # print(filter_src_file(src_dir))
-    # search_src_name()
-    # search_unittest_name()
-    # src_abs_path()
-    # string = "xxxxxxxxxxxxxxxxxxxxxxxx entry '某某内容' for aaaaaaaaaaaaaaaaaa"
-    # result = re.findall(".*entry(.*)for.*", string)
-    # for x in result:
-    #     print(x)
-    # match_unitest_file()
-    # match_unitest_file()
-    match_unitest_file()
-
+      match_unitest_file()
